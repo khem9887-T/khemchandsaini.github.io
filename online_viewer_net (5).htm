@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel — Khem Chand Saini</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --rose:#c0392b; --gold:#d4a017; --dark:#1a0a0a;
+      --cream:#fff8f0; --muted:#7a5a5a; --green:#27ae60;
+      --red:#e74c3c; --blue:#2980b9;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Poppins',sans-serif;background:#f0f2f5;color:#333;}
+
+    /* ── LOGIN SCREEN ── */
+    #loginScreen{
+      min-height:100vh;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,var(--dark),var(--rose));
+    }
+    .login-box{
+      background:#fff;border-radius:20px;padding:48px 40px;
+      width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.3);
+      text-align:center;
+    }
+    .login-box h1{font-size:1.6rem;color:var(--dark);margin-bottom:6px;}
+    .login-box p{color:var(--muted);font-size:0.9rem;margin-bottom:30px;}
+    .login-box input{
+      width:100%;padding:13px 18px;border:2px solid #e0e0e0;
+      border-radius:10px;font-size:1rem;margin-bottom:14px;
+      outline:none;transition:border 0.2s;
+    }
+    .login-box input:focus{border-color:var(--rose);}
+    .login-box button{
+      width:100%;padding:14px;background:var(--rose);color:#fff;
+      border:none;border-radius:10px;font-size:1rem;font-weight:700;
+      cursor:pointer;transition:background 0.2s;
+    }
+    .login-box button:hover{background:#a93226;}
+    #loginError{color:var(--red);font-size:0.85rem;margin-top:8px;display:none;}
+    .lock-icon{font-size:3rem;margin-bottom:16px;}
+
+    /* ── ADMIN PANEL ── */
+    #adminPanel{display:none;}
+
+    .admin-header{
+      background:var(--dark);color:#fff;
+      padding:16px 30px;display:flex;align-items:center;justify-content:space-between;
+      position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.3);
+    }
+    .admin-header h2{font-size:1.2rem;color:var(--gold);}
+    .admin-header span{font-size:0.85rem;color:#aaa;}
+    .logout-btn{
+      background:var(--red);color:#fff;border:none;
+      padding:8px 18px;border-radius:8px;cursor:pointer;font-weight:600;
+    }
+
+    .admin-body{max-width:960px;margin:30px auto;padding:0 20px 60px;}
+
+    .section-card{
+      background:#fff;border-radius:16px;padding:28px 30px;
+      margin-bottom:24px;box-shadow:0 4px 20px rgba(0,0,0,0.06);
+    }
+    .section-card h3{
+      font-size:1.05rem;color:var(--dark);margin-bottom:20px;
+      border-bottom:2px solid var(--rose);padding-bottom:10px;
+      display:flex;align-items:center;gap:8px;
+    }
+
+    .form-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;}
+    .form-group{flex:1;min-width:220px;}
+    .form-group label{
+      display:block;font-size:0.8rem;font-weight:600;
+      color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select{
+      width:100%;padding:11px 14px;border:2px solid #e8e8e8;
+      border-radius:10px;font-size:0.95rem;outline:none;
+      transition:border 0.2s;font-family:'Poppins',sans-serif;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus{border-color:var(--rose);}
+    .form-group textarea{resize:vertical;min-height:80px;}
+
+    .save-btn{
+      background:var(--green);color:#fff;border:none;
+      padding:12px 32px;border-radius:10px;font-size:0.95rem;
+      font-weight:700;cursor:pointer;transition:background 0.2s;
+      display:flex;align-items:center;gap:8px;
+    }
+    .save-btn:hover{background:#219a52;}
+
+    .preview-btn{
+      background:var(--blue);color:#fff;border:none;
+      padding:12px 28px;border-radius:10px;font-size:0.95rem;
+      font-weight:700;cursor:pointer;transition:background 0.2s;
+      display:flex;align-items:center;gap:8px;
+    }
+    .preview-btn:hover{background:#1a6a99;}
+
+    .btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;}
+
+    .toast{
+      position:fixed;bottom:30px;right:30px;
+      background:var(--green);color:#fff;
+      padding:14px 24px;border-radius:12px;
+      font-weight:600;font-size:0.95rem;
+      box-shadow:0 8px 30px rgba(0,0,0,0.2);
+      transform:translateY(100px);opacity:0;
+      transition:all 0.4s;z-index:9999;
+    }
+    .toast.show{transform:translateY(0);opacity:1;}
+
+    .badge{
+      display:inline-block;background:rgba(192,57,43,0.1);
+      color:var(--rose);font-size:0.75rem;padding:3px 10px;
+      border-radius:20px;font-weight:700;
+    }
+
+    .service-list{display:flex;flex-direction:column;gap:10px;}
+    .service-row{
+      display:flex;gap:10px;align-items:center;
+      background:#fafafa;border-radius:10px;padding:10px 14px;
+      border:1px solid #eee;
+    }
+    .service-row input{flex:1;border:1.5px solid #e0e0e0;border-radius:8px;padding:8px 12px;font-size:0.9rem;outline:none;}
+    .service-row input:focus{border-color:var(--rose);}
+    .del-btn{background:var(--red);color:#fff;border:none;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:1rem;}
+    .add-service-btn{
+      background:transparent;border:2px dashed var(--rose);color:var(--rose);
+      padding:10px;border-radius:10px;cursor:pointer;font-weight:700;
+      font-size:0.9rem;margin-top:8px;width:100%;
+    }
+
+    @media(max-width:600px){
+      .form-row{flex-direction:column;}
+      .admin-header{flex-wrap:wrap;gap:10px;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN ══════════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="lock-icon">🔐</div>
+    <h1>Admin Login</h1>
+    <p>Khem Chand Saini — Website Manager</p>
+    <input type="text" id="uname" placeholder="Username" autocomplete="off"/>
+    <input type="password" id="upass" placeholder="Password" autocomplete="off"
+           onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button onclick="doLogin()">🔓 Login</button>
+    <div id="loginError">❌ गलत Username या Password</div>
+  </div>
+</div>
+
+<!-- ══════════════ ADMIN PANEL ══════════════ -->
+<div id="adminPanel">
+
+  <div class="admin-header">
+    <div>
+      <h2>⚙️ Admin Panel</h2>
+      <span>Khem Chand Saini — Website Editor</span>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">🚪 Logout</button>
+  </div>
+
+  <div class="admin-body">
+
+    <!-- ── CONTACT INFO ── -->
+    <div class="section-card">
+      <h3>📞 Contact &amp; Personal Details <span class="badge">जरूरी</span></h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>ज्योतिषी का नाम</label>
+          <input id="astroName" value="Khem Chand Saini"/>
+        </div>
+        <div class="form-group">
+          <label>Hindi में नाम</label>
+          <input id="astroNameHi" value="खेम चंद सैनी"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mobile / WhatsApp Number</label>
+          <input id="phone" value="9672629316"/>
+        </div>
+        <div class="form-group">
+          <label>Email ID</label>
+          <input id="email" value="khemchand4oct1995@gmail.com"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Website Title (SEO)</label>
+          <input id="siteTitle" value="Khem Chand Saini — प्रेम समस्या समाधान विशेषज्ञ"/>
+        </div>
+        <div class="form-group">
+          <label>City / Location</label>
+          <input id="city" value="जयपुर, राजस्थान"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── HERO SECTION ── -->
+    <div class="section-card">
+      <h3>🏠 Hero Section</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hero Heading Line 1</label>
+          <input id="heroH1" value="अपनी प्रेम समस्या का"/>
+        </div>
+        <div class="form-group">
+          <label>Hero Heading Line 2 (Highlighted)</label>
+          <input id="heroH2" value="तुरंत समाधान पाएं"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hero Subtext</label>
+          <textarea id="heroSub">प्रेम में टूटे हैं? विवाह में परेशानी है? परिवार की मंजूरी नहीं मिल रही? खेम चंद सैनी जी से बात करें — 24/7 उपलब्ध, 100% गोपनीय और सटीक समाधान।</textarea>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Stat 1 — Number</label><input id="s1n" value="50,000+"/></div>
+        <div class="form-group"><label>Stat 1 — Label</label><input id="s1l" value="खुश जोड़े"/></div>
+        <div class="form-group"><label>Stat 2 — Number</label><input id="s2n" value="98%"/></div>
+        <div class="form-group"><label>Stat 2 — Label</label><input id="s2l" value="सफलता दर"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Stat 3 — Number</label><input id="s3n" value="24/7"/></div>
+        <div class="form-group"><label>Stat 3 — Label</label><input id="s3l" value="सहायता उपलब्ध"/></div>
+        <div class="form-group"><label>Stat 4 — Number</label><input id="s4n" value="15+ वर्ष"/></div>
+        <div class="form-group"><label>Stat 4 — Label</label><input id="s4l" value="अनुभव"/></div>
+      </div>
+    </div>
+
+    <!-- ── SERVICES ── -->
+    <div class="section-card">
+      <h3>💼 Services (सेवाएं)</h3>
+      <div class="service-list" id="servicesList"></div>
+      <button class="add-service-btn" onclick="addService()">+ नई सेवा जोड़ें</button>
+    </div>
+
+    <!-- ── ABOUT SECTION ── -->
+    <div class="section-card">
+      <h3>👤 About Section</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Experience (वर्ष)</label>
+          <input id="expYears" value="15"/>
+        </div>
+        <div class="form-group">
+          <label>Specialization</label>
+          <input id="specialization" value="वैदिक ज्योतिष, वशीकरण, प्रेम विवाह"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>About Text</label>
+          <textarea id="aboutText" style="min-height:120px;">खेम चंद सैनी जी राजस्थान के प्रसिद्ध वैदिक ज्योतिषी और प्रेम समस्या विशेषज्ञ हैं। 15 वर्षों के अनुभव के साथ उन्होंने 50,000 से अधिक जोड़ों की समस्याओं का समाधान किया है। वे वशीकरण, कुंडली मिलान, प्रेम विवाह, और टूटे रिश्तों को जोड़ने में माहिर हैं।</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── FOOTER ── -->
+    <div class="section-card">
+      <h3>🔻 Footer</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Copyright Text</label>
+          <input id="copyright" value="© 2024 KhemChandSaini.com — सर्वाधिकार सुरक्षित"/>
+        </div>
+        <div class="form-group">
+          <label>Tagline</label>
+          <input id="tagline" value="भारत के विश्वसनीय प्रेम समस्या विशेषज्ञ"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BUTTONS ── -->
+    <div class="btn-row">
+      <button class="save-btn" onclick="saveAll()">💾 सभी बदलाव सहेजें</button>
+      <button class="preview-btn" onclick="openPreview()">👁️ Website Preview देखें</button>
+    </div>
+
+  </div><!-- /admin-body -->
+</div><!-- /adminPanel -->
+
+<div class="toast" id="toast">✅ बदलाव सफलतापूर्वक सहेजे गए!</div>
+
+<script>
+// ═══════════════════════════════════════
+//  SECURE LOGIN  (change these!)
+// ═══════════════════════════════════════
+const CREDENTIALS = { user: 'Khemchand', pass: 'Khem@2026' };
+
+function doLogin(){
+  const u = document.getElementById('uname').value.trim();
+  const p = document.getElementById('upass').value.trim();
+  if(u === CREDENTIALS.user && p === CREDENTIALS.pass){
+    sessionStorage.setItem('kcs_auth','1');
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('adminPanel').style.display='block';
+    initAdmin();
+  } else {
+    document.getElementById('loginError').style.display='block';
+  }
+}
+
+function doLogout(){
+  sessionStorage.removeItem('kcs_auth');
+  location.reload();
+}
+
+window.addEventListener('load',()=>{
+  if(sessionStorage.getItem('kcs_auth')==='1'){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('adminPanel').style.display='block';
+    initAdmin();
+  }
+});
+
+// ═══════════════════════════════════════
+//  DEFAULT DATA
+// ═══════════════════════════════════════
+const DEFAULT_SERVICES = [
+  {icon:'💔', title:'खोया प्यार वापस पाएं'},
+  {icon:'💍', title:'प्रेम विवाह समाधान'},
+  {icon:'🌐', title:'अंतर्जातीय विवाह'},
+  {icon:'🏠', title:'पति-पत्नी विवाद'},
+  {icon:'💑', title:'ब्रेकअप से उबरना'},
+  {icon:'👨‍👩‍👧', title:'पारिवारिक विवाद'},
+  {icon:'💬', title:'रिलेशनशिप काउंसलिंग'},
+  {icon:'🔮', title:'वशीकरण विशेषज्ञ'},
+  {icon:'⭐', title:'प्रेम ज्योतिष'},
+];
+
+function initAdmin(){
+  const saved = JSON.parse(localStorage.getItem('kcs_services') || 'null') || DEFAULT_SERVICES;
+  renderServices(saved);
+  // Load saved field values
+  const fields = ['astroName','astroNameHi','phone','email','siteTitle','city',
+    'heroH1','heroH2','heroSub','s1n','s1l','s2n','s2l','s3n','s3l','s4n','s4l',
+    'expYears','specialization','aboutText','copyright','tagline'];
+  fields.forEach(id=>{
+    const saved = localStorage.getItem('kcs_'+id);
+    if(saved) document.getElementById(id).value = saved;
+  });
+}
+
+function renderServices(list){
+  const sl = document.getElementById('servicesList');
+  sl.innerHTML='';
+  list.forEach((s,i)=>{
+    const row = document.createElement('div');
+    row.className='service-row';
+    row.innerHTML=`
+      <input value="${s.icon}" style="max-width:60px;text-align:center;" title="Emoji/Icon" oninput="updateSvc(${i},'icon',this.value)"/>
+      <input value="${s.title}" oninput="updateSvc(${i},'title',this.value)"/>
+      <button class="del-btn" onclick="deleteSvc(${i})" title="हटाएं">✕</button>`;
+    sl.appendChild(row);
+  });
+}
+
+let services = [];
+function initServices(){
+  services = JSON.parse(localStorage.getItem('kcs_services') || 'null') || [...DEFAULT_SERVICES];
+}
+function updateSvc(i,k,v){ services[i][k]=v; }
+function deleteSvc(i){ services.splice(i,1); renderServices(services); }
+function addService(){ services.push({icon:'❤️',title:'नई सेवा'}); renderServices(services); }
+
+function saveAll(){
+  // Save fields
+  ['astroName','astroNameHi','phone','email','siteTitle','city',
+   'heroH1','heroH2','heroSub','s1n','s1l','s2n','s2l','s3n','s3l','s4n','s4l',
+   'expYears','specialization','aboutText','copyright','tagline'].forEach(id=>{
+    localStorage.setItem('kcs_'+id, document.getElementById(id).value);
+  });
+  localStorage.setItem('kcs_services', JSON.stringify(services));
+  showToast();
+}
+
+function showToast(){
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function openPreview(){
+  window.open('index.html','_blank');
+}
+
+// init services array on load
+document.addEventListener('DOMContentLoaded', initServices);
+</script>
+
+</body>
+</html>
